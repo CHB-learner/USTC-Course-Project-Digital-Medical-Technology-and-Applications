@@ -69,6 +69,8 @@ def metrics_builder(id2label):
         }
     return comp
 
+
+
 def main():
     ap=argparse.ArgumentParser()
     ap.add_argument("--train_file", default="Project_1/data/CMeEE-V2/CMeEE-V2_train.json")
@@ -76,12 +78,12 @@ def main():
     ap.add_argument("--test_file",  default="Project_1/data/CMeEE-V2/CMeEE-V2_test.json")
     ap.add_argument("--model_name", default="google-bert/bert-base-chinese")
     ap.add_argument("--out_dir",    default="ner_bert_cn")
-    ap.add_argument("--epochs", type=int, default=5)
+    ap.add_argument("--epochs", type=int, default=1)
     ap.add_argument("--bsz",    type=int, default=16)
     ap.add_argument("--lr",     type=float, default=3e-5)
     ap.add_argument("--max_len",type=int, default=512)
-    ap.add_argument("--train", action="store_true")
-    ap.add_argument("--predict", action="store_true")
+    # 新增：默认训练；可选 predict / train_predict
+    ap.add_argument("--mode", choices=["train", "predict", "train_predict"], default="train")
     args=ap.parse_args()
 
     train_items = read_jsonl(args.train_file)
@@ -93,7 +95,7 @@ def main():
 
     tok = AutoTokenizer.from_pretrained(args.model_name, use_fast=True)
 
-    # build datasets (最小：只做一次对齐)
+    # build datasets
     train_ds = align(tok, [x["text"] for x in train_items],
                           [x.get("entities",[]) for x in train_items],
                           label2id, args.max_len)
@@ -109,18 +111,19 @@ def main():
         label2id=label2id
     )
 
-    if args.train:
+    def do_train():
         collator = DataCollatorForTokenClassification(tokenizer=tok)
+        # 仅用旧版也支持的参数
         targs = TrainingArguments(
             output_dir=args.out_dir,
             learning_rate=args.lr,
             per_device_train_batch_size=args.bsz,
             per_device_eval_batch_size=args.bsz,
             num_train_epochs=args.epochs,
-            evaluation_strategy="epoch",
-            save_strategy="epoch",
-            load_best_model_at_end=True,
-            metric_for_best_model="f1",
+            logging_steps=50,
+            save_steps=500,      # 简单按步保存
+            # 去掉 evaluation_strategy / save_strategy / load_best_model_at_end / metric_for_best_model
+            # 有的旧版也没有 report_to；若再报错，就删掉下面这一行
             report_to="none"
         )
         trainer = Trainer(
@@ -133,16 +136,19 @@ def main():
             compute_metrics=metrics_builder(id2label),
         )
         trainer.train()
+        # 手动评估与保存
+        print("Eval metrics:", trainer.evaluate(eval_dataset=dev_ds))
         trainer.save_model(args.out_dir)
         tok.save_pretrained(args.out_dir)
 
-    if args.predict:
-        # 用 HF 自带 pipeline，自动给字符级 start/end（超省事）
+
+    def do_predict():
+        from transformers import pipeline
         nlp = pipeline(
             "token-classification",
-            model=args.out_dir,            # 用刚训练好的目录
+            model=args.out_dir,     # 用训练产物
             tokenizer=args.out_dir,
-            aggregation_strategy="simple"  # 合并 B-/I- 为实体段
+            aggregation_strategy="simple"
         )
         results=[]
         for ex in test_items:
@@ -150,10 +156,9 @@ def main():
             outs = nlp(text)
             ents=[]
             for o in outs:
-                # o: {'entity_group': 'pro', 'score':..., 'word':..., 'start': int, 'end': int}
                 ents.append({
                     "start_idx": o["start"],
-                    "end_idx":   o["end"],     # 右开区间
+                    "end_idx":   o["end"],
                     "type":      o["entity_group"],
                     "entity":    text[o["start"]:o["end"]]
                 })
@@ -162,5 +167,16 @@ def main():
             json.dump(results, f, ensure_ascii=False, indent=2)
         print(f"Saved to {args.out_dir}/test_predictions.json")
 
+    if args.mode == "train":
+        do_train()
+    elif args.mode == "predict":
+        do_predict()
+    else:  # train_predict
+        do_train()
+        do_predict()
+
+
 if __name__ == "__main__":
     main()
+
+
