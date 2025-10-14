@@ -24,8 +24,16 @@ https://huggingface.co/answerdotai/ModernBERT-large<br>
 #### deberta-v3-large<br>
 https://huggingface.co/microsoft/deberta-v3-large<br>
 
+
+
 ### 参考
-Finally, a Replacement for BERT（ 2024 年 12 月 19 日）
-https://huggingface.co/blog/modernbert
+Finally, a Replacement for BERT（ 2024 年 12 月 19 日）<br>
+https://huggingface.co/blog/modernbert<br>
+CBLUE<br>
+https://github.com/CBLUEbenchmark/CBLUE<br>
+GlobalPointer：用统一的方式处理嵌套和非嵌套NER<br>
+https://kexue.fm/archives/8373<br>
+LLaMA-Factory<br>
+https://github.com/hiyouga/LLaMA-Factory<br>
 
 
