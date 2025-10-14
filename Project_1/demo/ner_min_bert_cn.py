@@ -77,7 +77,7 @@ def main():
     ap.add_argument("--dev_file",   default="Project_1/data/CMeEE-V2/CMeEE-V2_dev.json")
     ap.add_argument("--test_file",  default="Project_1/data/CMeEE-V2/CMeEE-V2_test.json")
     ap.add_argument("--model_name", default="google-bert/bert-base-chinese")
-    ap.add_argument("--out_dir",    default="ner_bert_cn")
+    ap.add_argument("--out_dir",    default="Project_1/data/ner_bert_cn")
     ap.add_argument("--epochs", type=int, default=1)
     ap.add_argument("--bsz",    type=int, default=16)
     ap.add_argument("--lr",     type=float, default=3e-5)
