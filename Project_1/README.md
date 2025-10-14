@@ -19,10 +19,14 @@ https://tianchi.aliyun.com/dataset/95414
 ### 模型选择
 ![berts](./image/modernbert_pareto_curve.png)
 
+
+
 #### ModernBERT-large<br>
 https://huggingface.co/answerdotai/ModernBERT-large<br>
 #### deberta-v3-large<br>
 https://huggingface.co/microsoft/deberta-v3-large<br>
+#### deberta-v3-large<br>
+https://huggingface.co/google-bert/bert-base-chinese<br>
 
 
 
