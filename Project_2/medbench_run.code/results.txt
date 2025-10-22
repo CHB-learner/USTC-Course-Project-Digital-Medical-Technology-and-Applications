@@ -1,9 +1,0 @@
-Qwen2.5-7B-Instruct:
--- MRG task evaluation --
-{'rouge-1': 0.46203107361622886, 'rouge-2': 0.28034778459976867, 'rouge-l': 0.38830484651006886}
-avg_rouge:0.3769
-
-Llama-3.1-8B-Instruct
--- MRG task evaluation --
-{'rouge-1': 0.43819449973766267, 'rouge-2': 0.2517327016593211, 'rouge-l': 0.37516135147646573}
-avg_rouge:0.3550
